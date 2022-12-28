@@ -17,7 +17,7 @@
 
         {{-- Table component --}}
         <x-table.table :headers="$headers">
-            @foreach ($users as $key => $user)
+            @forelse ($data as $key => $user)
             <tr class="even:bg-white">
                 <x-table.td class="pl-5">
                     <x-button-action-delete href="{{ route('users.destroy', $user) }}" title="delete">{{
@@ -36,15 +36,21 @@
                     </a>
                 </x-table.td>
 
-                <x-table.td>
+                <x-table.td class="pl-2">
                     {{ $user->email }}
                 </x-table.td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <x-table.td colspan="4" class="text-center">
+                    {{ __('No data available.') }}
+                </x-table.td>
+            </tr>
+            @endforelse
         </x-table.table>
 
         {{-- Pagination link --}}
-        {{ $users->links() }}
+        {{ $data->links() }}
     </div>
 
 </x-app-layout>

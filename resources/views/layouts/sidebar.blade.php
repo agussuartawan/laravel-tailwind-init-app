@@ -11,6 +11,8 @@
                <span class="ml-3">Dashboard</span>
             </a>
          </li>
+
+         @can('akses manajemen user')
          <li>
             <button type="button"
                class="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dropdown-user{{ request()->is('users*') || request()->is('roles*') || request()->is('permissions*') ? ' sidebar-active' : '' }}"
@@ -43,6 +45,7 @@
                </li>
             </ul>
          </li>
+         @endcan
       </ul>
    </div>
 </aside>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRoleRequest;
+use App\Http\Requests\UpdateRoleRequest;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
@@ -15,13 +17,30 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $roles = Role::query();
-        $roles->when($search, function($query) use($search){
+        $data = Role::query();
+        $data->when($search, function($query) use($search){
             return $query->where('name', 'like', '%'.$search.'%');
         });
 
-        $roles = $roles->paginate(10);
-        return view('role.index', compact('roles'));
+        $headers = [
+            [
+                'name' => '', 
+                'width' => '1%',
+                'classes' => 'pl-8'
+            ], 
+            [
+                'name' => 'No.', 
+                'class' => 'text-left pl-8', 
+                'width' => '5%'
+            ], 
+            [
+                'name' => 'Name',
+                'class' => 'text-left pl-8'
+            ],
+        ];
+
+        $data = $data->paginate(10);
+        return view('role.index', compact('data', 'search', 'headers'));
     }
 
     /**
@@ -31,7 +50,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        //
+        return view('role.create');
     }
 
     /**
@@ -40,9 +59,10 @@ class RoleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        //
+        Role::create($request->validated());
+        return to_route('roles.index')->with('success', 'Role has been saved.');
     }
 
     /**
@@ -51,9 +71,9 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Role $role)
     {
-        //
+        
     }
 
     /**
@@ -62,9 +82,9 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Role $role)
     {
-        //
+       return view('role.edit');
     }
 
     /**
@@ -74,9 +94,10 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateRoleRequest $request, Role $role)
     {
-        //
+        $role->update($request->validated());
+        return to_route('roles.index')->with('success', 'Role has been updated.');
     }
 
     /**
@@ -85,8 +106,9 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Role $role)
     {
-        //
+        $role->delete();
+        return to_route('roles.index')->with('success', 'Role has been deleted.');
     }
 }

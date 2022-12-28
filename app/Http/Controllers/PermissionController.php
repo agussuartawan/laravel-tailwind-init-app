@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePermissionRequest;
+use App\Http\Requests\UpdatePermissionRequest;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 
@@ -15,13 +17,31 @@ class PermissionController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $permissions = Permission::query();
-        $permissions->when($search, function($query) use($search){
+        $data = Permission::query();
+        $data->when($search, function($query) use($search){
             return $query->where('name', 'like', '%'.$search.'%');
         });
 
-        $permissions = $permissions->paginate(10);
-        return view('role.index', compact('permissions'));
+        $data = $data->paginate(10);
+
+        $headers = [
+            [
+                'name' => '', 
+                'width' => '1%',
+                'classes' => 'pl-8'
+            ], 
+            [
+                'name' => 'No.', 
+                'class' => 'text-left pl-8', 
+                'width' => '5%'
+            ], 
+            [
+                'name' => 'Name',
+                'class' => 'text-left pl-8'
+            ],
+        ];
+
+        return view('permission.index', compact('data', 'search', 'headers'));
     }
 
     /**
@@ -31,7 +51,7 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        //
+        return view('permission.create');
     }
 
     /**
@@ -40,9 +60,10 @@ class PermissionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePermissionRequest $request)
     {
-        //
+        Permission::create($request->validated());
+        return to_route('permissions.index')->with('success', 'Permission has been saved.');
     }
 
     /**
@@ -51,7 +72,7 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Permission $permission)
     {
         //
     }
@@ -62,9 +83,9 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Permission $permission)
     {
-        //
+        return view('permission.edit', compact('permission'));
     }
 
     /**
@@ -74,9 +95,10 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePermissionRequest $request, Permission $permission)
     {
-        //
+        $permission->update($request->validated());
+        return to_route('permissions.index')->with('success', 'Permission has been updated.');
     }
 
     /**
@@ -85,8 +107,9 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Permission $permission)
     {
-        //
+        $permission->delete();
+        return to_route('permissions.index')->with('success', 'Permission has been deleted.');
     }
 }

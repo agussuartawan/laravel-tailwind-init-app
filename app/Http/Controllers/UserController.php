@@ -17,13 +17,13 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $users = User::query();
-        $users->when($search, function($query) use($search){
+        $data = User::query();
+        $data->when($search, function($query) use($search){
             return $query->where('name', 'like', '%'.$search.'%')
                         ->orWhere('email', 'like', '%'.$search.'%');
         });
 
-        $users = $users->paginate(10);
+        $data = $data->paginate(10);
         $headers = [
             [
                 'name' => '', 
@@ -44,7 +44,7 @@ class UserController extends Controller
                 'class' => 'text-left pl-2'
             ]
         ];
-        return view('user.index', compact('users', 'search', 'headers'));
+        return view('user.index', compact('data', 'search', 'headers'));
     }
 
     /**
@@ -77,7 +77,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        return view('user.show', compact('user'));
     }
 
     /**
@@ -88,7 +88,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        //
+        return view('user.edit', compact('user'));
     }
 
     /**
@@ -100,7 +100,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $user->update($request->validated());
+        return to_route('users.index')->with('success', 'User has been updated.');
     }
 
     /**
@@ -111,6 +112,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return to_route('users.index')->with('success', 'User has been deleted.');
     }
 }

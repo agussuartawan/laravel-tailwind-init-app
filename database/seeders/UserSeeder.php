@@ -20,6 +20,8 @@ class UserSeeder extends Seeder
     public function run()
     {
         DB::transaction(function () {
+            // User::factory(20)->create();
+            
 			$userManagement = Permission::create(['name' => 'akses manajemen user']);
 
 			$superAdminRole = Role::create(['name' => 'Super Admin']);
