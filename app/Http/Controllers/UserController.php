@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -22,7 +24,27 @@ class UserController extends Controller
         });
 
         $users = $users->paginate(10);
-        return view('user.index', compact('users', 'search'));
+        $headers = [
+            [
+                'name' => '', 
+                'width' => '1%',
+                'classes' => 'pl-8'
+            ], 
+            [
+                'name' => 'No.', 
+                'class' => 'text-left pl-8', 
+                'width' => '5%'
+            ], 
+            [
+                'name' => 'Name',
+                'class' => 'text-left pl-8'
+            ], 
+            [
+                'name' => 'Email', 
+                'class' => 'text-left pl-2'
+            ]
+        ];
+        return view('user.index', compact('users', 'search', 'headers'));
     }
 
     /**
@@ -32,7 +54,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('user.create');
     }
 
     /**
@@ -41,9 +63,10 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        //
+        User::create($request->validated());
+        return to_route('users.index')->with('success', 'User has been saved.');
     }
 
     /**
@@ -52,7 +75,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user)
     {
         //
     }
@@ -63,7 +86,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(User $user)
     {
         //
     }
@@ -75,7 +98,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, User $user)
     {
         //
     }
@@ -86,7 +109,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
         //
     }
