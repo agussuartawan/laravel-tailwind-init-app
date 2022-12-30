@@ -16,32 +16,10 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->search;
-        $data = Role::query();
-        $data->when($search, function($query) use($search){
-            return $query->where('name', 'like', '%'.$search.'%');
-        });
+        $headers = $this->tableHeaders($request);
+        $data = $this->filterData($request);
 
-        $headers = [
-            [
-                'name' => '', 
-                'width' => '1%',
-            ], 
-            [
-                'name' => 'No.', 
-                'class' => 'text-left pl-8', 
-                'width' => '10%',
-                'orderable' => true
-            ], 
-            [
-                'name' => 'Name',
-                'class' => 'text-left pl-8',
-                'orderable' => true
-            ],
-        ];
-
-        $data = $data->paginate(10);
-        return view('role.index', compact('data', 'search', 'headers'));
+        return view('role.index', compact('data', 'headers'));
     }
 
     /**
@@ -111,5 +89,45 @@ class RoleController extends Controller
     {
         $role->delete();
         return to_route('roles.index')->with('success', 'Role has been deleted.');
+    }
+
+    public function tableHeaders($request)
+    {
+        return [
+            [
+                'name' => '', 
+                'width' => '1%',
+            ], 
+            [
+                'name' => 'No.|created_at', 
+                'class' => 'text-left pl-8', 
+                'width' => '10%',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ], 
+            [
+                'name' => 'Name|name',
+                'class' => 'text-left pl-8',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ],
+        ];
+    }
+
+    public function filterData($request)
+    {
+        $search = $request->search;
+        $orderBy = $request->orderBy;
+        $orderType = $request->orderType;
+        
+        $data = Role::query();
+        $data->when($search, function($query) use($search){
+            return $query->where('name', 'like', '%'.$search.'%');
+        })->when($orderBy, function($query) use($orderBy, $orderType){
+            return $query->orderBy($orderBy, $orderType);
+        });
+        $data = $data->paginate(10);
+
+        return $data;
     }
 }

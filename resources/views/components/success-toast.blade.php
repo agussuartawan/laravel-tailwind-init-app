@@ -1,6 +1,9 @@
-<div class="flex justify-center" x-data="{ show: true }" x-show="show" x-transition
-    x-init="setTimeout(() => show = false, 3000)">
-    <div id="toast-success" class="flex items-center p-4 mb-4 w-full max-w-xs bg-white rounded-lg shadow" role="alert">
+<div class="flex justify-center items-start inset-0 z-100 absolute mt-10" x-data="{ show: true }" x-show="show"
+    x-on:click="show=false" x-transition:leave="transition ease-in duration-300"
+    x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+    <div id="toast-success"
+        class="flex items-center p-4 mb-4 w-full max-w-xs bg-gradient-to-b from-green-300 to-green-100 rounded-lg shadow"
+        role="alert">
         <div
             class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 text-green-500 bg-green-100 rounded-lg">
             <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"

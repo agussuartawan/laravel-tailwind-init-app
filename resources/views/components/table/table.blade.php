@@ -6,7 +6,7 @@
             <table class="border-collapse table-fixed w-full text-sm">
                 <thead>
                     <tr>
-                        @foreach ($headers as $key => $header)
+                        @foreach ($headers as $header)
                         <th scope="col"
                             class="border-b border-slate-300 font-bold p-4 pt-0 pb-3{{ ' '.$header['classes'] }}"
                             width="{{ $header['width'] }}">

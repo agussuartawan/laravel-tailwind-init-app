@@ -16,33 +16,10 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->search;
-        $data = Permission::query();
-        $data->when($search, function($query) use($search){
-            return $query->where('name', 'like', '%'.$search.'%');
-        });
+        $data = $this->filterData($request);
+        $headers = $this->tableHeaders($request);
 
-        $data = $data->paginate(10);
-
-        $headers = [
-            [
-                'name' => '', 
-                'width' => '1%',
-            ], 
-            [
-                'name' => 'No.', 
-                'class' => 'text-left pl-8', 
-                'width' => '10%',
-                'orderable' => true
-            ], 
-            [
-                'name' => 'Name',
-                'class' => 'text-left pl-8',
-                'orderable' => true
-            ],
-        ];
-
-        return view('permission.index', compact('data', 'search', 'headers'));
+        return view('permission.index', compact('data', 'headers'));
     }
 
     /**
@@ -112,5 +89,45 @@ class PermissionController extends Controller
     {
         $permission->delete();
         return to_route('permissions.index')->with('success', 'Permission has been deleted.');
+    }
+
+    public function tableHeaders($request)
+    {
+        return [
+            [
+                'name' => '', 
+                'width' => '1%',
+            ], 
+            [
+                'name' => 'No.|created_at', 
+                'class' => 'text-left pl-8', 
+                'width' => '10%',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ], 
+            [
+                'name' => 'Name|name',
+                'class' => 'text-left pl-8',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ],
+        ];
+    }
+
+    public function filterData($request)
+    {
+        $search = $request->search;
+        $orderBy = $request->orderBy;
+        $orderType = $request->orderType;
+        
+        $data = Permission::query();
+        $data->when($search, function($query) use($search){
+            return $query->where('name', 'like', '%'.$search.'%');
+        })->when($orderBy, function($query) use($orderBy, $orderType){
+            return $query->orderBy($orderBy, $orderType);
+        });
+        $data = $data->paginate(10);
+
+        return $data;
     }
 }

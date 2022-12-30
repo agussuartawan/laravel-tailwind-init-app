@@ -7,16 +7,13 @@
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-        @if($message = Session::get('success'))
-        <x-success-toast>{{ $message }}</x-success-toast>
-        @endif
-
         <!-- Breadcrumb -->
         <x-breadcrumb :contents="json_encode(['Permissions' => '#'])" />
 
-        <form action="{{ route('permissions.index') }}" id="search-form">
+        <form action="{{ route('permissions.index') }}" id="filter-form">
+            <input type="hidden" name="page" value="{{ request()->input('page') }}">
             {{-- Search --}}
-            <x-search-input :value="$search" :action="route('permissions.create')" />
+            <x-search-input :value="request()->input('search')" :action="route('permissions.create')" />
 
             {{-- Table component --}}
             <x-table.table :headers="$headers">
@@ -50,7 +47,7 @@
         </form>
 
         {{-- Pagination link --}}
-        {{ $data->links() }}
+        {{ $data->withQueryString()->links() }}
 
     </div>
 </x-app-layout>

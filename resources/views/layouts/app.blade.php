@@ -28,6 +28,9 @@
                 @include('layouts.sidebar')
             </div>
             <div class="px-3 md:px-0 w-full">
+                @if($message = Session::get('success'))
+                <x-success-toast>{{ $message }}</x-success-toast>
+                @endif
                 <div class="py-3">
                     {{ $slot }}
                 </div>
