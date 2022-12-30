@@ -11,7 +11,7 @@
         <x-breadcrumb :contents="json_encode(['Roles' => '#'])" />
 
         {{-- Search --}}
-        <form action="{{ route('roles.index') }}">
+        <form action="{{ route('roles.index') }}" id="search-form">
             <x-search-input :value="$search" :action="route('roles.create')" />
         </form>
 
@@ -26,7 +26,7 @@
                     </x-button-action-delete>
                 </x-table.td>
 
-                <x-table.td class="pl-8">
+                <x-table.td class="pl-10">
                     {{ $key+1 }}
                 </x-table.td>
 

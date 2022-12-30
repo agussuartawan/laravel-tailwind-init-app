@@ -16,35 +16,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->search;
-        $data = User::query();
-        $data->when($search, function($query) use($search){
-            return $query->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('email', 'like', '%'.$search.'%');
-        });
-
-        $data = $data->paginate(10);
-        $headers = [
-            [
-                'name' => '', 
-                'width' => '1%',
-                'classes' => 'pl-8'
-            ], 
-            [
-                'name' => 'No.', 
-                'class' => 'text-left pl-8', 
-                'width' => '5%'
-            ], 
-            [
-                'name' => 'Name',
-                'class' => 'text-left pl-8'
-            ], 
-            [
-                'name' => 'Email', 
-                'class' => 'text-left pl-2'
-            ]
-        ];
-        return view('user.index', compact('data', 'search', 'headers'));
+        $data = $this->filterData($request);
+        $headers = $this->tableHeaders($request);
+        return view('user.index', compact('data', 'headers'));
     }
 
     /**
@@ -114,5 +88,52 @@ class UserController extends Controller
     {
         $user->delete();
         return to_route('users.index')->with('success', 'User has been deleted.');
+    }
+
+    public function tableHeaders($request)
+    {
+        return [
+            [
+                'name' => '', 
+                'width' => '1%',
+            ], 
+            [
+                'name' => 'No.|created_at', 
+                'class' => 'text-left pl-8', 
+                'width' => '10%',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ], 
+            [
+                'name' => 'Name|name',
+                'class' => 'text-left',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ], 
+            [
+                'name' => 'Email|email', 
+                'class' => 'text-left',
+                'orderable' => true,
+                'orderType' => $request->orderType
+            ]
+        ];
+    }
+
+    public function filterData($request)
+    {
+        $search = $request->search;
+        $orderBy = $request->orderBy;
+        $orderType = $request->orderType;
+
+        $data = User::query();
+        $data->when($search, function($query) use($search){
+            return $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%');
+        })->when($orderBy, function($query) use($orderBy, $orderType){
+            return $query->orderBy($orderBy, $orderType);
+        });
+
+        $data = $data->paginate(10);
+        
+        return $data;
     }
 }

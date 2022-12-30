@@ -28,16 +28,17 @@ class PermissionController extends Controller
             [
                 'name' => '', 
                 'width' => '1%',
-                'classes' => 'pl-8'
             ], 
             [
                 'name' => 'No.', 
                 'class' => 'text-left pl-8', 
-                'width' => '5%'
+                'width' => '10%',
+                'orderable' => true
             ], 
             [
                 'name' => 'Name',
-                'class' => 'text-left pl-8'
+                'class' => 'text-left pl-8',
+                'orderable' => true
             ],
         ];
 

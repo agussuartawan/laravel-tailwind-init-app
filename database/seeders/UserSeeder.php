@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         DB::transaction(function () {
-            // User::factory(20)->create();
+            User::factory(20)->create();
             
 			$userManagement = Permission::create(['name' => 'akses manajemen user']);
 

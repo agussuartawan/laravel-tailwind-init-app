@@ -23,11 +23,19 @@ class Table extends Component
             $name = is_array($header) ? $header['name'] : $header;
             $class = $header['class'] ?? '';
             $width = $header['width'] ?? '';
+            $orderable = $header['orderable'] ?? false;
+            $orderType = $header['orderType'] ?? 'asc';
+
+            $arrayName = explode('|', $name);
+            $arrayName[1] = $arrayName[1] ?? '';
 
             return [
-                'name' => $name,
+                'name' => $arrayName[0],
                 'classes' => $class,
-                'width' => $width
+                'width' => $width,
+                'orderable' => $orderable,
+                'orderBy' => $arrayName[1],
+                'orderType' => $orderType
             ];
         }, $headers);
     }

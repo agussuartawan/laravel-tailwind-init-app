@@ -10,47 +10,48 @@
         <!-- Breadcrumb -->
         <x-breadcrumb :contents="json_encode(['Users' => '#'])" />
 
-        {{-- Search --}}
-        <form action="{{ route('users.index') }}">
-            <x-search-input :value="$search" :action="route('users.create')" />
+        <form action="{{ route('users.index') }}" id="filter-form">
+            <input type="hidden" name="page" value="{{ request()->input('page') }}">
+            {{-- Search --}}
+            <x-search-input :value="request()->input('search')" :action="route('users.create')" />
+
+            {{-- Table component --}}
+            <x-table.table :headers="$headers">
+                @forelse ($data as $key => $user)
+                <tr class="even:bg-white">
+                    <x-table.td class="pl-5">
+                        <x-button-action-delete href="{{ route('users.destroy', $user) }}" title="delete">{{
+                            __('x')
+                            }}
+                        </x-button-action-delete>
+                    </x-table.td>
+
+                    <x-table.td class="pl-10">
+                        {{ $key+1 }}
+                    </x-table.td>
+
+                    <x-table.td class="pl-4">
+                        <a href="{{ route('users.edit', $user) }}" class="link" title="edit">
+                            {{ $user->name }}
+                        </a>
+                    </x-table.td>
+
+                    <x-table.td class="pl-4">
+                        {{ $user->email }}
+                    </x-table.td>
+                </tr>
+                @empty
+                <tr>
+                    <x-table.td colspan="4" class="text-center">
+                        {{ __('No data available.') }}
+                    </x-table.td>
+                </tr>
+                @endforelse
+            </x-table.table>
         </form>
 
-        {{-- Table component --}}
-        <x-table.table :headers="$headers">
-            @forelse ($data as $key => $user)
-            <tr class="even:bg-white">
-                <x-table.td class="pl-5">
-                    <x-button-action-delete href="{{ route('users.destroy', $user) }}" title="delete">{{
-                        __('x')
-                        }}
-                    </x-button-action-delete>
-                </x-table.td>
-
-                <x-table.td class="pl-8">
-                    {{ $key+1 }}
-                </x-table.td>
-
-                <x-table.td class="pl-8">
-                    <a href="{{ route('users.edit', $user) }}" class="link" title="edit">
-                        {{ $user->name }}
-                    </a>
-                </x-table.td>
-
-                <x-table.td class="pl-2">
-                    {{ $user->email }}
-                </x-table.td>
-            </tr>
-            @empty
-            <tr>
-                <x-table.td colspan="4" class="text-center">
-                    {{ __('No data available.') }}
-                </x-table.td>
-            </tr>
-            @endforelse
-        </x-table.table>
-
         {{-- Pagination link --}}
-        {{ $data->links() }}
+        {{ $data->withQueryString()->links() }}
     </div>
 
 </x-app-layout>
