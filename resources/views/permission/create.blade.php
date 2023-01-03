@@ -10,19 +10,15 @@
         <!-- Breadcrumb -->
         <x-breadcrumb :contents="json_encode(['Permissions' => route('permissions.index'), 'Create' => '#'])" />
 
-        <div class="px-5 py-3 mb-4 text-gray-700 border border-gray-200 rounded-lg bg-white shadow">
-            <header>
-                <h2 class="text-lg font-medium text-gray-900">
-                    {{ __('Profile Information') }}
-                </h2>
+        <form method="post" action="{{ route('permissions.store') }}">
+            @csrf
+            <div class="px-5 py-3 mb-4 text-gray-700 border border-gray-200 rounded-lg bg-white shadow space-y-6">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">
+                        {{ __('Create Permission') }}
+                    </h2>
+                </header>
 
-                <p class="mt-1 text-sm text-gray-600">
-                    {{ __("Update your account's profile information and email address.") }}
-                </p>
-            </header>
-
-            <form method="post" action="{{ route('permissions.store') }}" class="space-y-6">
-                @csrf
 
                 <div>
                     <x-input-label for="name" :value="__('Name')" />
@@ -31,11 +27,21 @@
                     <x-input-error class="mt-2" :messages="$errors->get('name')" />
                 </div>
 
+                <x-input-label class="pb-0" for="name" :value="__('Roles')" />
+                <div class="overflow-y-auto max-h-64 columns-{count}">
+                    @forelse ($roles as $role)
+                    <div class="flex items-center mb-4">
+                        <x-checkbox-input id="role_id" name="role_id" class="block w-full" :value="$role->id" />
+                        <x-input-label class="ml-1" for="role_id" :value="$role->name" />
+                    </div>
+                    @empty
+                    <span>Data not available.</span>
+                    @endforelse
+                </div>
                 <div class="flex items-center gap-4">
                     <x-primary-button>{{ __('Save') }}</x-primary-button>
                 </div>
-            </form>
-        </div>
-
+            </div>
+        </form>
     </div>
 </x-app-layout>

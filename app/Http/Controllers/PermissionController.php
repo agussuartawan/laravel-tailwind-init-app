@@ -6,6 +6,7 @@ use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
@@ -29,7 +30,8 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        return view('permission.create');
+        $roles = Role::orderby('name', 'asc')->get();
+        return view('permission.create', compact('roles'));
     }
 
     /**
