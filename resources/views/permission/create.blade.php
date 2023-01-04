@@ -28,12 +28,19 @@
                 </div>
 
                 <x-input-label class="pb-0" for="name" :value="__('Roles')" />
-                <div class="overflow-y-auto max-h-64 columns-{count}">
-                    @forelse ($roles as $role)
-                    <div class="flex items-center mb-4">
-                        <x-checkbox-input id="role_id" name="role_id" class="block w-full" :value="$role->id" />
-                        <x-input-label class="ml-1" for="role_id" :value="$role->name" />
-                    </div>
+                <div class="overflow-y-auto max-h-64 columns-5 p-1">
+                    @forelse ($roles as $key => $role)
+                        @if ($role->name != \App\Models\User::SUPER_ADMIN)
+                            <div class="flex items-center mb-4">
+                                <x-checkbox-input 
+                                    id="role_id-{{ $key }}" 
+                                    name="role_id[]" 
+                                    class="block w-full" 
+                                    value="{{ $role->id }}"
+                                />
+                                <x-input-label class="ml-1" for="role_id-{{ $key }}" :value="$role->name" />
+                            </div>
+                        @endif
                     @empty
                     <span>Data not available.</span>
                     @endforelse

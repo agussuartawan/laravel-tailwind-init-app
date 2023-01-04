@@ -28,11 +28,23 @@
                     <x-input-error class="mt-2" :messages="$errors->get('name')" />
                 </div>
 
-                <div>
-                    <x-input-label for="role_id" :value="__('Roles')" />
-                    <x-select-input id="role_id" name="role_id" type="text" class="mt-1 block w-full"
-                        :value="old('role_id', $permission->name)" required autofocus autocomplete="role_id" />
-                    <x-input-error class="mt-2" :messages="$errors->get('role_id')" />
+                <x-input-label class="pb-0" for="name" :value="__('Roles')" />
+                <div class="overflow-y-auto max-h-64 columns-5 p-1">
+                    @forelse ($roles as $key => $role)
+                        @if ($role->name != \App\Models\User::SUPER_ADMIN)
+                            <div class="flex items-center mb-4">
+                                <x-checkbox-input 
+                                    id="role_id-{{ $key }}" 
+                                    name="role_id[]" 
+                                    class="block w-full" 
+                                    value="{{ $role->id }}"
+                                    :checked="($permission->roles->contains($role->id)) ? 'checked' : ''" />
+                                <x-input-label class=" ml-1" for="role_id-{{ $key }}" :value="$role->name" />
+                            </div>
+                        @endif
+                    @empty
+                    <span>Data not available.</span>
+                    @endforelse
                 </div>
 
                 <div class="flex items-center gap-4">

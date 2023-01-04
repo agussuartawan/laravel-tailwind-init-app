@@ -20,10 +20,12 @@
                 @forelse ($data as $key => $role)
                 <tr class="even:bg-white">
                     <x-table.td class="pl-5">
+                        @if($role->name != \App\Models\User::SUPER_ADMIN)
                         <x-button-action-delete href="{{ route('roles.destroy', $role) }}" title="delete">{{
                             __('x')
                             }}
                         </x-button-action-delete>
+                        @endif
                     </x-table.td>
 
                     <x-table.td class="pl-10">
@@ -31,13 +33,29 @@
                     </x-table.td>
 
                     <x-table.td class="pl-8">
-                        <a href="{{ route('roles.edit', $role) }}" class="link" title="edit">
+                        @if($role->name != \App\Models\User::SUPER_ADMIN)
+                            <a href="{{ route('roles.edit', $role) }}" class="link" title="edit">
+                                {{ $role->name }}
+                            </a>
+                        @else
                             {{ $role->name }}
-                        </a>
+                        @endif
                     </x-table.td>
 
                     <x-table.td>
-                        {{ $role->email }}
+                        @if($role->name == \App\Models\User::SUPER_ADMIN)
+                            <x-success-badge>{{ __('All permissions') }}</x-success-badge>
+                        @else
+                            @forelse ($role->permissions as $permission)
+                                <x-default-badge>
+                                    <a href="{{ route('permissions.edit', $permission) }}" class="link">
+                                        {{ $permission->name }}
+                                    </a>
+                                </x-default-badge>
+                            @empty
+                                <x-secondary-badge>{{ __('No permissions set') }}</x-secondary-badge>
+                            @endforelse
+                        @endif
                     </x-table.td>
                 </tr>
                 @empty

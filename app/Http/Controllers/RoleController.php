@@ -4,7 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
+use PhpParser\Node\Stmt\Return_;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -29,7 +35,10 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return view('role.create');
+        Session::put('requestReferrer', URL::previous());
+        
+        $permissions = Permission::orderBy('name', 'asc')->get();
+        return view('role.create', compact('permissions'));
     }
 
     /**
@@ -40,8 +49,13 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        Role::create($request->validated());
-        return to_route('roles.index')->with('success', 'Role has been saved.');
+        DB::transaction(function() use($request){
+            $role = Role::create($request->validated());
+
+            $permissions = Permission::whereIn('id', $request->permission_id)->get();
+            $role->syncPermissions($permissions);
+        });
+        return redirect(Session::get('requestReferrer'))->with('success', 'Role has been saved.');
     }
 
     /**
@@ -63,7 +77,13 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-       return view('role.edit');
+        if($role->name == User::SUPER_ADMIN){
+            abort(403);
+        }
+        Session::put('requestReferrer', URL::previous());
+        
+        $permissions = Permission::orderBy('name', 'asc')->get();
+        return view('role.edit', compact('role', 'permissions'));
     }
 
     /**
@@ -75,8 +95,20 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        $role->update($request->validated());
-        return to_route('roles.index')->with('success', 'Role has been updated.');
+        if($role->name == User::SUPER_ADMIN){
+            abort(403);
+        }
+        DB::transaction(function() use($request, $role){
+            $role->update($request->validated());
+
+            if($request->permission_id){
+                $permissions = Permission::whereIn('id', $request->permission_id)->get();
+                $role->syncPermissions($permissions);
+            } else {
+                $role->revokePermissionTo($role->permissions);
+            }
+        });
+        return redirect(Session::get('requestReferrer'))->with('success', 'Role has been updated.');
     }
 
     /**
@@ -87,8 +119,11 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
+        if($role->name == User::SUPER_ADMIN){
+            abort(403);
+        }
         $role->delete();
-        return to_route('roles.index')->with('success', 'Role has been deleted.');
+        return redirect()->back()->with('success', 'Role has been deleted.');
     }
 
     public function tableHeaders($request)
@@ -110,6 +145,10 @@ class RoleController extends Controller
                 'class' => 'text-left pl-8',
                 'orderable' => true,
                 'orderType' => $request->orderType
+            ],
+            [
+                'name' => 'Permissions',
+                'class' => 'text-left',
             ],
         ];
     }

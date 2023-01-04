@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Observers\PermissionObserver;
 use App\Observers\UserObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Spatie\Permission\Models\Permission;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -30,6 +32,7 @@ class EventServiceProvider extends ServiceProvider
     public function boot()
     {
         User::observe(UserObserver::class);
+        Permission::observe(PermissionObserver::class);
     }
 
     /**

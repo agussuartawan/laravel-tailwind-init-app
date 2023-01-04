@@ -6,6 +6,10 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -28,7 +32,10 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user.create');
+        Session::put('requestReferrer', URL::previous());
+        
+        $roles = Role::where('name', '!=', User::SUPER_ADMIN)->orderBy('name', 'asc')->get();
+        return view('user.create', compact('roles'));
     }
 
     /**
@@ -40,7 +47,7 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         User::create($request->validated());
-        return to_route('users.index')->with('success', 'User has been saved.');
+        return redirect(Session::get('requestReferrer'))->with('success', 'User has been saved.');
     }
 
     /**
@@ -62,6 +69,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        Session::put('requestReferrer', URL::previous());
+        
         return view('user.edit', compact('user'));
     }
 
@@ -75,7 +84,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         $user->update($request->validated());
-        return to_route('users.index')->with('success', 'User has been updated.');
+        return redirect(Session::get('requestReferrer'))->with('success', 'User has been updated.');
     }
 
     /**
@@ -87,7 +96,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return to_route('users.index')->with('success', 'User has been deleted.');
+        return redirect()->back()->with('success', 'User has been deleted.');
     }
 
     public function tableHeaders($request)
@@ -135,5 +144,12 @@ class UserController extends Controller
         $data = $data->paginate(10);
         
         return $data;
+    }
+
+    public function getPermissionList(Request $request)
+    {
+        return Permission::when($request->role_id, function($query){
+            return $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%');
+        })->orderBy('name', 'asc')->get();
     }
 }

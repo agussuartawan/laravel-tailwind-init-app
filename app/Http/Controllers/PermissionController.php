@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -30,6 +33,8 @@ class PermissionController extends Controller
      */
     public function create()
     {
+        Session::put('requestReferrer', URL::previous());
+        
         $roles = Role::orderby('name', 'asc')->get();
         return view('permission.create', compact('roles'));
     }
@@ -42,8 +47,15 @@ class PermissionController extends Controller
      */
     public function store(StorePermissionRequest $request)
     {
-        Permission::create($request->validated());
-        return to_route('permissions.index')->with('success', 'Permission has been saved.');
+        DB::transaction(function() use ($request){
+            $permission = Permission::create($request->validated());
+
+            if($request->role_id){
+                $roles = Role::whereIn('id', $request->role_id)->get();
+                $permission->syncRoles($roles);
+            }
+        });
+        return redirect(Session::get('requestReferrer'))->with('success', 'Permission has been saved.');
     }
 
     /**
@@ -65,7 +77,10 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission)
     {
-        return view('permission.edit', compact('permission'));
+        Session::put('requestReferrer', URL::previous());
+        
+        $roles = Role::orderby('name', 'asc')->get();
+        return view('permission.edit', compact('permission', 'roles'));
     }
 
     /**
@@ -77,8 +92,20 @@ class PermissionController extends Controller
      */
     public function update(UpdatePermissionRequest $request, Permission $permission)
     {
-        $permission->update($request->validated());
-        return to_route('permissions.index')->with('success', 'Permission has been updated.');
+        
+        DB::transaction(function() use($request, $permission){
+            $permission->update($request->validated());
+
+            if($request->role_id){
+                $roles = Role::whereIn('id', $request->role_id)->get();
+                $permission->syncRoles($roles);
+            } else {
+                foreach($permission->roles as $role){
+                    $permission->removeRole($role);
+                }
+            }
+        });
+        return redirect(Session::get('requestReferrer'))->with('success', 'Permission has been updated.');
     }
 
     /**
@@ -90,7 +117,7 @@ class PermissionController extends Controller
     public function destroy(Permission $permission)
     {
         $permission->delete();
-        return to_route('permissions.index')->with('success', 'Permission has been deleted.');
+        return redirect()->back()->with('success', 'Permission has been deleted.');
     }
 
     public function tableHeaders($request)
@@ -112,6 +139,10 @@ class PermissionController extends Controller
                 'class' => 'text-left pl-8',
                 'orderable' => true,
                 'orderType' => $request->orderType
+            ],
+            [
+                'name' => 'Roles',
+                'class' => 'text-left',
             ],
         ];
     }

@@ -35,6 +35,18 @@
                             {{ $permission->name }}
                         </a>
                     </x-table.td>
+
+                    <x-table.td>
+                        @forelse ($permission->roles as $role)
+                            <x-default-badge>
+                                <a href="{{ route('roles.edit', $role) }}" class="link">
+                                    {{ $role->name }}
+                                </a>
+                            </x-default-badge>
+                        @empty
+                            <x-secondary-badge>{{ __('No role set') }}</x-secondary-badge>
+                        @endforelse
+                    </x-table.td>
                 </tr>
                 @empty
                 <tr>
