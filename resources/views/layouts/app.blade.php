@@ -37,7 +37,7 @@
             </div>
         </div>
     </div>
+    @stack('js')
 </body>
-@stack('js')
 
 </html>

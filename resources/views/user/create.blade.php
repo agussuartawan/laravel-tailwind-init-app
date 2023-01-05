@@ -27,13 +27,15 @@
                     <x-input-error class="mt-2" :messages="$errors->get('name')" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4" x-data={show:false}>
                     <div>
                         <x-input-label for="role_id" :value="__('Role')" />
                         <x-select-input 
                             id="role_id" 
                             name="role_id"
-                            required>
+                            required
+                            x-on:change="show = true"
+                            >
                             <option>~Choose~</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}">{{ $role->name }}</option>
@@ -42,8 +44,9 @@
                         <x-input-error class="mt-2" :messages="$errors->get('name')" />
                     </div>
 
-                    <div class="border-4 border-white border-l-blue-500 min-h-fit">
-
+                    <div class="border-l-2 border-blue-500 min-h-fit" x-show=show>
+                        <x-input-label :value="__('Permissions')" class="ml-2"/>
+                        <div id="permissions"></div>
                     </div>
                 </div>
 
@@ -53,4 +56,31 @@
             </div>
         </form>
     </div>
+
+    @push('js')
+        <script>
+            const selectRole = document.querySelector('#role_id');
+            selectRole.addEventListener('change', () => {
+                const roleId = selectRole.value;
+                fetch(`{{ url('users/get-permission-list') }}?role_id=${roleId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const permissionsEl = document.querySelector('#permissions');
+                    permissionsEl.innerHTML = '';
+                    data.forEach(item => {
+                        item.permissions.forEach(permission => {
+                            const badge = document.createElement('span');
+                            badge.classList.add('bg-blue-100', 'text-blue-800', 'text-xs', 'font-medium', 'mx-1', 'px-2.5', 'py-0.5', 'rounded');
+                            badge.innerText = permission.name;
+                            
+                            permissionsEl.appendChild(badge);
+                        })
+                    });
+                })
+                .catch(error => {
+                    
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

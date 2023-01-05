@@ -53,5 +53,4 @@
         {{-- Pagination link --}}
         {{ $data->withQueryString()->links() }}
     </div>
-
 </x-app-layout>

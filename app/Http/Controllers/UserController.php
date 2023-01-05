@@ -148,8 +148,11 @@ class UserController extends Controller
 
     public function getPermissionList(Request $request)
     {
-        return Permission::when($request->role_id, function($query){
-            return $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%');
-        })->orderBy('name', 'asc')->get();
+        if($request->role_id){
+            return Role::with(['permissions' => function($query){
+                    $query->select('name');
+                }])->select('id', 'name')->where('id', $request->role_id)->orderBy('name', 'asc')->get();
+        }
+        return [];
     }
 }
