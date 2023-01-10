@@ -41,8 +41,6 @@
                                 <x-input-label class="ml-1" for="role_id-{{ $key }}" :value="$role->name" />
                             </div>
                         @endif
-                    @empty
-                    <span>Data not available.</span>
                     @endforelse
                 </div>
                 <div class="flex items-center gap-4">

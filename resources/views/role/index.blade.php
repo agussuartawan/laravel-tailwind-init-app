@@ -21,7 +21,10 @@
                 <tr class="even:bg-white">
                     <x-table.td class="pl-5">
                         @if($role->name != \App\Models\User::SUPER_ADMIN)
-                        <x-button-action-delete href="{{ route('roles.destroy', $role) }}" title="delete">{{
+                        <x-button-action-delete onclick="submitForm('{{ route('roles.destroy', $role) }}')" 
+                        title="delete"
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'confirm-role-deletion')">{{
                             __('x')
                             }}
                         </x-button-action-delete>
@@ -73,4 +76,35 @@
         {{ $data->withQueryString()->links() }}
 
     </div>
+
+    {{-- delete modal --}}
+    <x-modal name="confirm-role-deletion" :show="false" focusable>
+        <form method="POST" name="delete-form" class="p-6">
+            @csrf
+            @method('delete')
+
+            <h2 class="text-lg font-medium text-gray-900">
+                {{ __('Are you sure you want to delete this role?') }}
+            </h2>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    {{ __('Cancel') }}
+                </x-secondary-button>
+
+                <x-danger-button class="ml-3">
+                    {{ __('Delete Role') }}
+                </x-danger-button>
+            </div>
+        </form>
+    </x-modal>
+
+    @push('js')
+        <script>
+            const submitForm = (action) => {
+                const form = document.forms.namedItem("delete-form");
+                form.action = action;
+            }
+        </script>
+    @endpush
 </x-app-layout>

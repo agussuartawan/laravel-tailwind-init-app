@@ -6,9 +6,10 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -46,7 +47,14 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        User::create($request->validated());
+        DB::transaction(function() use($request){
+            $validated = $request->validated();
+            $validated['password'] = Hash::make($validated['password']);
+            $user = User::create($validated);
+            
+            $role = Role::findOrFail($request->role_id);
+            $user->assignRole($role);
+        });
         return redirect(Session::get('requestReferrer'))->with('success', 'User has been saved.');
     }
 
@@ -71,7 +79,8 @@ class UserController extends Controller
     {
         Session::put('requestReferrer', URL::previous());
         
-        return view('user.edit', compact('user'));
+        $roles = Role::where('name', '!=', User::SUPER_ADMIN)->orderBy('name', 'asc')->get();
+        return view('user.edit', compact('user', 'roles'));
     }
 
     /**
@@ -83,7 +92,12 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $user->update($request->validated());
+        DB::transaction(function() use($request, $user){
+            $user->update($request->validated());
+
+            $role = Role::findOrFail($request->role_id);
+            $user->syncRoles($role);
+        });
         return redirect(Session::get('requestReferrer'))->with('success', 'User has been updated.');
     }
 
@@ -134,7 +148,7 @@ class UserController extends Controller
         $orderBy = $request->orderBy;
         $orderType = $request->orderType;
 
-        $data = User::query();
+        $data = User::where('name', '!=', User::SUPER_ADMIN);
         $data->when($search, function($query) use($search){
             return $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%');
         })->when($orderBy, function($query) use($orderBy, $orderType){
